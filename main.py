@@ -170,7 +170,7 @@ class Equipment(Properties):
 
         if Re < 2300:
             f = 64 / Re
-        else:  # Halland equation
+        else:  # Holland equation
             f = (1 / (-1.8 * log10(6.9 / Re + (rel_roughness / 3.7) ** 1.11))) ** 2
 
         h_loss = (V ** 2 / (2 * g)) * (f * Lentgh / Diameter + k)
@@ -191,10 +191,8 @@ def main():
 
     pipe1 = Equipment(P=pump1["P2"], T=pump1["T2"], Q=pump1["Q2"]).pipe(Lentgh=10, Diameter=Din, Roughness=Rough,
                                                                         rho=Rho, miu=Miu)
-
     cv1 = Equipment(P=pipe1["P2"], T=pipe1["T2"], Q=pipe1["Q2"]).cv(Diameter=Din, Roughness=Rough, rho=Rho, miu=Miu,
                                                                     opening=80)
-
     pipe2 = Equipment(P=cv1["P2"], T=cv1["T2"], Q=cv1["Q2"]).pipe(Lentgh=5, Diameter=Din, Roughness=Rough, rho=Rho,
                                                                   miu=Miu)
 
