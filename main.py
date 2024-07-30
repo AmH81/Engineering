@@ -42,7 +42,7 @@ class Properties:
         self.T = T
         self.P = P
         self.Q = Q
-
+# return the whole dict as the output to give the straight results to next equipment
     def __str__(self) -> dict:
         return {
             "T2": self.T,
@@ -77,15 +77,15 @@ class Equipment(Properties):
             P2 = delta_p + P  # psia
 
             '''delta_t = head * (1 / Efficiency - 1) / (780 * cp)
-            T2 += delta_t
-'''
+            T2 += delta_t'''
+
             m = rho * V * A
-            H2 = delta_p / rho + cp * T
+            H2 = delta_p / (rho * m) + cp * T
             T2 = H2 / cp
 
         return Properties(T2, P2, Q2).__str__()
 
-    def fan(self, Diameter , Efficiency=0.75, Power=12.15007585, On=True):
+    def fan(self, Diameter, cp=materials["Lube oil"]["cp"], rho=materials["Lube oil"]["rho"], Efficiency=0.75, Power=12.15007585, On=True):
         T = self.T
         P = self.P
         Q = self.Q
@@ -97,15 +97,17 @@ class Equipment(Properties):
         V = Q2 / A  # ft/s
 
         P2 = P
-        T2 = T
         Q2 = Q
         if On == True:
             delta_p = 550 * Efficiency / Q
             P2 = P - delta_p
+            m = rho * V * A
+            H2 = delta_p / (rho * m) + cp * T
+            T2 = H2 / cp
 
         return Properties(T2, P2, Q2).__str__()
 
-    def cv(self, Diameter, Roughness, rho, miu, opening=50):
+    def cv(self, Diameter, Roughness, rho, miu, cp=materials["Lube oil"]["cp"], opening=50):
         '''
         Based on a flanged gate valve
         '''
@@ -118,8 +120,6 @@ class Equipment(Properties):
         k = kd + ko
 
         g = 32.174
-        Roughness = Roughness * 12  # ft to inch
-        rel_roughness = Roughness / Diameter  # inch / inch
 
         miu = miu / 3600  # lbm/ft/h to lbm/ft/s
         Q2 = Q / 448.8325  # GPM to ft^3/s
@@ -128,14 +128,14 @@ class Equipment(Properties):
         A = pi * (Diameter / 2) ** 2  # ft^2
         V = Q2 / A  # ft/s
 
-        Re = rho * V * Diameter / miu
-
         h_loss = (V ** 2 / (2 * g)) * k
         delta_p = h_loss * rho * g
         P2 = P - delta_p
         P2 = P2 / 144
-        Q2 = Q2 * 448.8325
-        T2 = T
+
+        m = rho * V * A
+        H2 = delta_p / (rho * m) + cp * T
+        T2 = H2 / cp
 
         return Properties(T2, P2, Q).__str__()
 
@@ -197,7 +197,7 @@ def main():
     Miu = materials["Lube oil"]["miu"]
     Rough = 1.5E-4
 
-    pump1 = Equipment(P=4 * 14.7, T=68, Q=560).pump(Efficiency=0.75, Power=12000)
+    pump1 = Equipment(P=4 * 14.7, T=68, Q=560).pump(Efficiency=0.75, Power=1200000)
 
     pipe1 = Equipment(P=pump1["P2"], T=pump1["T2"], Q=pump1["Q2"]).pipe(Lentgh=10, Diameter=Din, Roughness=Rough,
                                                                         rho=Rho, miu=Miu)
