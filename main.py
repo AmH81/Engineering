@@ -56,13 +56,16 @@ class Equipment(Properties):
     def __init__(self, T, P, Q):
         super().__init__(T, P, Q)
 
-    def pump(self, Efficiency=0.75, Power=12.15007585, rho=materials["Lube oil"]["rho"], cp=materials["Lube oil"]["cp"],
+    def pump(self, Diameter=Din, Efficiency=0.75, Power=12.15007585, rho=materials["Lube oil"]["rho"], cp=materials["Lube oil"]["cp"],
              On=True):
         T = self.T
         P = self.P
         Q = self.Q
-        A = pi * (Din / 2) ** 2
 
+        Q2 = Q / 448.8325  # GPM to ft^3/s
+        Diameter = Diameter / 12  # INCH TO FT
+        A = pi * (Diameter / 2) ** 2  # ft^2
+        V = Q2 / A  # ft/s
         P2 = P
         T2 = T
         Q2 = Q
@@ -73,12 +76,16 @@ class Equipment(Properties):
             head = delta_p * 144 / (rho * g)  # ft
             P2 = delta_p + P  # psia
 
-            delta_t = head * (1 / Efficiency - 1) / (780 * cp)
+            '''delta_t = head * (1 / Efficiency - 1) / (780 * cp)
             T2 += delta_t
+'''
+            m = rho * V * A
+            H2 = delta_p / rho + cp * T
+            T2 = H2 / cp
 
         return Properties(T2, P2, Q2).__str__()
 
-    def fan(self,Diameter , Efficiency=0.75, Power=12.15007585, On=True):
+    def fan(self, Diameter , Efficiency=0.75, Power=12.15007585, On=True):
         T = self.T
         P = self.P
         Q = self.Q
@@ -133,7 +140,7 @@ class Equipment(Properties):
         return Properties(T2, P2, Q).__str__()
 
     ## well Tested
-    def pipe(self, Lentgh, Diameter, Roughness, rho, miu, angel=0):
+    def pipe(self, Lentgh, Diameter, Roughness, rho, miu, cp=materials["Lube oil"]["cp"], angel=0):
         T = self.T
         P = self.P
         Q = self.Q
@@ -177,7 +184,10 @@ class Equipment(Properties):
         delta_p = h_loss * rho * g
         P2 = P - delta_p
         P2 = P2 / 144
-        T2 = T
+
+        m = rho * V * A
+        H2 = delta_p / (rho * m) + cp * T
+        T2 = H2 / cp
 
         return Properties(T2, P2, Q).__str__()
 
@@ -187,7 +197,7 @@ def main():
     Miu = materials["Lube oil"]["miu"]
     Rough = 1.5E-4
 
-    pump1 = Equipment(P=4 * 14.7, T=68, Q=560).pump(Efficiency=0.75, Power=12)
+    pump1 = Equipment(P=4 * 14.7, T=68, Q=560).pump(Efficiency=0.75, Power=12000)
 
     pipe1 = Equipment(P=pump1["P2"], T=pump1["T2"], Q=pump1["Q2"]).pipe(Lentgh=10, Diameter=Din, Roughness=Rough,
                                                                         rho=Rho, miu=Miu)
