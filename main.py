@@ -95,6 +95,7 @@ class Equipment(Properties):
 
         P2 = P
         Q2 = Q
+        T2 = T
         if On == True:
             delta_p = 550 * Efficiency / Q
             P2 = P - delta_p
@@ -136,7 +137,7 @@ class Equipment(Properties):
 
         return Properties(T2, P2, Q).__str__()
 
-    ## well Tested
+
     def pipe(self, Lentgh, Diameter, Roughness, rho, miu, cp=materials["Lube oil"]["cp"], angel=0):
         T = self.T
         P = self.P
