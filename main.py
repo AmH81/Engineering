@@ -76,9 +76,6 @@ class Equipment(Properties):
             head = delta_p * 144 / (rho * g)  # ft
             P2 = delta_p + P  # psia
 
-            '''delta_t = head * (1 / Efficiency - 1) / (780 * cp)
-            T2 += delta_t'''
-
             m = rho * V * A
             H2 = delta_p / (rho * m) + cp * T
             T2 = H2 / cp
